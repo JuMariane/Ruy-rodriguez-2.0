@@ -7,6 +7,7 @@ const navLinks = [
   { label: "A Escola", href: "#sobre" },
   { label: "Turnos e Horários", href: "#horarios" },
   { label: "Vida Escolar", href: "#vida-escolar" },
+  { label: "Mural", href: "#mural" },
   { label: "Documentos", href: "#documentos" },
   { label: "Dúvidas", href: "#duvidas" },
 ];

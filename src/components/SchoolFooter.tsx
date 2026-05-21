@@ -5,6 +5,7 @@ const footerLinks = [
   { label: "A Escola", href: "#sobre" },
   { label: "Turnos e Horários", href: "#horarios" },
   { label: "Vida Escolar", href: "#vida-escolar" },
+  { label: "Mural da Comunidade", href: "#mural" },
   { label: "Documentos", href: "#documentos" },
   { label: "Dúvidas Frequentes", href: "#duvidas" },
 ];

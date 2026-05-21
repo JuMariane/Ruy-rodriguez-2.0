@@ -5,19 +5,19 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 const faqs = [
   {
     question: "Como funciona o modelo de Ensino Integral?",
-    answer: "A escola segue o modelo PEI, com 7 horas diárias. Além das matérias comuns, os alunos têm Eletivas, Clubes Juvenis e foco no Projeto de Vida.",
+    answer: "A nossa escola opera sob o Programa de Ensino Integral (PEI) do Estado de São Paulo, adotando uma jornada diária de 7 horas que visa a formação acadêmica, social e pessoal dos estudantes. Além das disciplinas da Base Nacional Comum Curricular (como Português, Matemática, Ciências, etc.), a grade do PEI conta com componentes inovadores e diversificados:\n\n• Projeto de Vida: Aulas focadas no planejamento do futuro do aluno, orientando suas escolhas profissionais, acadêmicas e pessoais com o suporte integral de professores tutores.\n• Eletivas: Disciplinas temáticas bimestrais escolhidas pelos alunos a partir de seus interesses de pesquisa e sonhos, integrando diferentes áreas do conhecimento.\n• Clubes Juvenis: Grupos organizados e liderados pelos próprios estudantes para discutir e praticar temas como cultura, esportes, tecnologia e artes, estimulando o protagonismo juvenil.\n• Tutoria: Acompanhamento individualizado no qual cada estudante escolhe um professor para ser seu tutor, orientando-o na sua jornada acadêmica e no desenvolvimento do seu Projeto de Vida.\n• Práticas de Ciências: Aulas laboratoriais investigativas voltadas ao aprendizado prático em nossos laboratórios equipados.",
   },
   {
     question: "Quais refeições são servidas?",
-    answer: "No turno da manhã, servimos café da manhã e almoço. No turno da tarde/noite, servimos lanche e jantar.",
+    answer: "Garantimos uma alimentação saudável, balanceada e gratuita para todos os nossos estudantes durante o período letivo, sob a supervisão direta de nutricionistas da rede pública de ensino. O cardápio varia conforme o turno:\n\nTurno da Manhã (Anos Finais do Ensino Fundamental - 07h00 às 14h00):\n• Recepção/Café da Manhã (às 07h00): Servido logo no acolhimento, contendo opções nutritivas como leite, café, achocolatado, pão com manteiga/frios, frutas ou cereais.\n• Almoço Completo: Uma refeição quente e nutritiva com arroz, feijão, proteína (carne, frango ou peixe), guarnição e saladas frescas variadas.\n\nTurno da Tarde/Noite (Ensino Médio e Técnico Novotec - 14h15 às 21h15):\n• Lanche da Tarde: Servido no intervalo do período vespertino, incluindo pães, bolos, frutas, sucos e iogurtes.\n• Jantar Completo (período da noite): Refeição quente e completa nos mesmos moldes do almoço para assegurar energia e nutrição até o final das aulas às 21h15.",
   },
   {
     question: "A escola oferece cursos técnicos?",
-    answer: "Sim, através do programa Novotec, o Ensino Médio (tarde) pode ter formação profissional integrada.",
+    answer: "Sim! A Escola Estadual Ruy Rodriguez orgulhosamente oferece cursos técnicos integrados ao Ensino Médio por meio do programa Novotec Integrado, do Governo do Estado de São Paulo em parceria com o Centro Paula Souza. Esse modelo proporciona dupla certificação: ao concluir o Ensino Médio, o estudante recebe o diploma regular e o certificado de Técnico Profissionalizante.\n\nAtualmente, oferecemos três cursos de grande demanda no mercado de trabalho no turno da tarde/noite:\n\n• Técnico em Desenvolvimento de Sistemas: Focado em lógica de programação, banco de dados, desenvolvimento web e de aplicativos móveis. Conta com o suporte de nosso Laboratório de Informática equipado com computadores, notebooks portáteis e tablets.\n• Técnico em Vendas: Voltado a estratégias de comércio digital, técnicas de negociação, atendimento ao cliente, marketing e inteligência de mercado.\n• Técnico em Administração: Prepara o estudante para atuar no controle financeiro, gestão de pessoas, logística, rotinas de escritório e empreendedorismo.\n\nTodas as aulas práticas e teóricas são integradas à grade horária regular das 14h15 às 21h15.",
   },
   {
-    question: "Onde encontro o calendário escolar?",
-    answer: "O calendário oficial fica disponível para consulta na secretaria e também é atualizado no nosso blog oficial.",
+    question: "Como obter documentos ou consultar o calendário?",
+    answer: "A secretaria e a gestão escolar oferecem canais facilitados para o atendimento de pais, alunos e comunidade externa:\n\n• Documentos Escolares (Histórico, Declaração de Matrícula, etc.): Podem ser solicitados presencialmente na secretaria da escola durante o horário de atendimento, pelo telefone (19) 3261-1256 ou pelo e-mail institucional e905471a@educacao.sp.gov.br. Muitos documentos de matrícula e boletins também podem ser emitidos de forma 100% digital através da plataforma Secretaria Escolar Digital (SED).\n• Calendário Escolar e Cardápios: Disponibilizamos na nossa aba de Documentos & Downloads do site o arquivo PDF do Calendário Escolar 2026 completo (com reuniões de pais, recessos, exames e conselhos de classe), além do Cardápio Semanal atualizado e a Lista de Materiais básicos recomendados para cada segmento.",
   },
 ];
 
@@ -89,7 +89,7 @@ const FAQSection = () => {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25, ease: "easeInOut" }}
                     >
-                      <div className="px-6 pb-6 pt-2 text-sm md:text-base text-muted-foreground font-body leading-relaxed pl-14 border-t border-border/40 bg-school-cream/30">
+                      <div className="px-6 pb-6 pt-2 text-sm md:text-base text-muted-foreground font-body leading-relaxed pl-14 border-t border-border/40 bg-school-cream/30 whitespace-pre-line">
                         {faq.answer}
                       </div>
                     </motion.div>
