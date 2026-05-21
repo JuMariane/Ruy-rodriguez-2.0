@@ -10,87 +10,7 @@ import chiquinhaImg from "@/assets/chiquinha-gonzaga.jpg";
 import teatroOriki from "@/assets/teatro-oriki.jpg";
 import sambaRuy from "@/assets/samba-ruy.jpg";
 
-interface ProjectPost {
-  id: string;
-  title: string;
-  subtitle: string;
-  date: string;
-  description: string;
-  tag: string;
-  image: string;
-  link: string;
-  likes: number;
-  authorEmail?: string;
-}
-
-const initialProjects: ProjectPost[] = [
-  {
-    id: "proj-1",
-    title: "Jornada de Investigação Científica",
-    subtitle: "Apresentação e Banners na Escola",
-    date: "Novembro 2025",
-    description: "Estudantes apresentaram banners científicos com resultados de pesquisas sobre a qualidade da água e meio ambiente regional.",
-    tag: "Ciências",
-    image: projetoBanner,
-    link: "#",
-    likes: 12,
-  },
-  {
-    id: "proj-2",
-    title: "Visita ao Instituto Agronômico",
-    subtitle: "IAC-Apta Portas Abertas",
-    date: "Outubro 2025",
-    description: "Visita técnica ao Instituto Agronômico de Campinas com apresentação de linhas de pesquisa e visitas guiadas.",
-    tag: "Técnico / Novotec",
-    image: visitaIac,
-    link: "#",
-    likes: 8,
-  },
-  {
-    id: "proj-3",
-    title: "Estudo da Bacia Hidrográfica",
-    subtitle: "Visita Técnica e Análises",
-    date: "Maio 2025",
-    description: "Coleta e análise de amostras de água em nascentes do Parque Itajaí para verificar a qualidade hídrica regional.",
-    tag: "Ciências",
-    image: baciaHidro,
-    link: "#",
-    likes: 15,
-  },
-  {
-    id: "proj-4",
-    title: "Projeto Chiquinha Gonzaga",
-    subtitle: "Trilha de Educação Antirracista",
-    date: "Novembro 2023",
-    description: "Projeto interdisciplinar de valorização da música e cultura afro-brasileira a partir da história da compositora.",
-    tag: "Eletivas",
-    image: chiquinhaImg,
-    link: "#",
-    likes: 24,
-  },
-  {
-    id: "proj-5",
-    title: "Peça Teatral Olorum Ayé",
-    subtitle: "Grupo Oriki de Teatro",
-    date: "Outubro 2023",
-    description: "Peça de teatro auto-organizada pelos alunos celebrando a mitologia e a ancestralidade afro-brasileira.",
-    tag: "Clubes",
-    image: teatroOriki,
-    link: "#",
-    likes: 19,
-  },
-  {
-    id: "proj-6",
-    title: "O Samba do Ruy",
-    subtitle: "Atividade de Eletiva Artística",
-    date: "Setembro 2023",
-    description: "Apresentação musical e debate histórico sobre o samba como patrimônio e manifestação popular brasileira.",
-    tag: "Cultura",
-    image: sambaRuy,
-    link: "#",
-    likes: 31,
-  },
-];
+import { dbService, ProjectPost } from "../lib/dbService";
 
 const tagColors: Record<string, string> = {
   Eletivas: "bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900/60",
@@ -109,20 +29,8 @@ interface MuralSectionProps {
 }
 
 const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
-  // Persistence state
-  const [projectList, setProjectList] = useState<ProjectPost[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("ruy_mural_posts");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Erro ao carregar posts do localStorage:", e);
-        }
-      }
-    }
-    return initialProjects;
-  });
+  const [projectList, setProjectList] = useState<ProjectPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Keep track of liked posts in this browser session
   const [likedPosts, setLikedPosts] = useState<string[]>(() => {
@@ -139,9 +47,22 @@ const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
     return [];
   });
 
+  // Load posts from database service on mount
   useEffect(() => {
-    localStorage.setItem("ruy_mural_posts", JSON.stringify(projectList));
-  }, [projectList]);
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const posts = await dbService.getPosts();
+        setProjectList(posts);
+      } catch (err) {
+        console.error("Erro ao carregar posts:", err);
+        toast.error("Erro ao carregar os posts do mural.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("ruy_mural_liked_ids", JSON.stringify(likedPosts));
@@ -216,7 +137,7 @@ const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || (!isAnonymous && !author) || !description) {
       toast.error("Por favor, preencha os campos obrigatórios (Título, " + (isAnonymous ? "" : "Autor ") + "e Descrição).");
@@ -239,52 +160,62 @@ const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
     };
 
     try {
-      const updatedList = [newPost, ...projectList];
-      setProjectList(updatedList);
-      
-      // Tentativa de salvar imediatamente para detectar erros de cota
-      localStorage.setItem("ruy_mural_posts", JSON.stringify(updatedList));
+      const createdPost = await dbService.createPost(newPost);
+      setProjectList([createdPost, ...projectList]);
       toast.success("Publicação adicionada ao mural com sucesso!");
-    } catch (error) {
-      console.error("Erro de persistência local:", error);
-      toast.error("Erro ao salvar! A imagem pode ser muito pesada. Tente com outra foto menor.");
-      return;
-    }
 
-    // Reset states
-    setTitle("");
-    setSubtitle("");
-    setAuthor("");
-    setIsAnonymous(false);
-    setDescription("");
-    setImageFile(null);
-    setImagePreview(null);
-    setLink("");
-    setIsModalOpen(false);
+      // Reset states
+      setTitle("");
+      setSubtitle("");
+      setAuthor("");
+      setIsAnonymous(false);
+      setDescription("");
+      setImageFile(null);
+      setImagePreview(null);
+      setLink("");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Erro ao publicar:", error);
+      toast.error("Erro ao salvar! A imagem pode ser muito pesada ou ocorreu um erro de conexão.");
+    }
   };
 
-  const handleLike = (id: string) => {
+  const handleLike = async (id: string) => {
     const isAlreadyLiked = likedPosts.includes(id);
+    const post = projectList.find(p => p.id === id);
+    if (!post) return;
+
+    let newLikes = post.likes;
+    let newLikedPosts = [...likedPosts];
+
     if (isAlreadyLiked) {
       // Unlike
-      setLikedPosts(likedPosts.filter((postId) => postId !== id));
-      setProjectList(
-        projectList.map((post) =>
-          post.id === id ? { ...post, likes: Math.max(0, post.likes - 1) } : post
-        )
-      );
+      newLikes = Math.max(0, post.likes - 1);
+      newLikedPosts = likedPosts.filter((postId) => postId !== id);
     } else {
       // Like
-      setLikedPosts([...likedPosts, id]);
-      setProjectList(
-        projectList.map((post) =>
-          post.id === id ? { ...post, likes: post.likes + 1 } : post
-        )
-      );
+      newLikes = post.likes + 1;
+      newLikedPosts = [...likedPosts, id];
+    }
+
+    // Optimistic UI update
+    setLikedPosts(newLikedPosts);
+    setProjectList(
+      projectList.map((p) => p.id === id ? { ...p, likes: newLikes } : p)
+    );
+
+    try {
+      await dbService.updateLikes(id, newLikes);
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+      // Rollback
+      setLikedPosts(likedPosts);
+      setProjectList(projectList);
+      toast.error("Erro de conexão ao curtir publicação.");
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const postToDelete = projectList.find((p) => p.id === id);
     if (!postToDelete) return;
 
@@ -297,10 +228,20 @@ const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
       return;
     }
 
-    const updatedList = projectList.filter((p) => p.id !== id);
-    setProjectList(updatedList);
-    localStorage.setItem("ruy_mural_posts", JSON.stringify(updatedList));
-    toast.success("Publicação excluída com sucesso!");
+    const prevList = [...projectList];
+
+    // Optimistic UI update
+    setProjectList(projectList.filter((p) => p.id !== id));
+
+    try {
+      await dbService.deletePost(id);
+      toast.success("Publicação excluída com sucesso!");
+    } catch (error) {
+      console.error("Erro ao excluir:", error);
+      // Rollback
+      setProjectList(prevList);
+      toast.error("Erro ao excluir publicação. Verifique sua conexão.");
+    }
   };
 
   // Prefill author name when modal opens
@@ -417,117 +358,141 @@ const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
           </div>
 
           {/* Grid de Projetos */}
-          <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-            <AnimatePresence mode="popLayout">
-              {filteredProjects.map((project) => {
-                const isLiked = likedPosts.includes(project.id);
-                return (
-                  <motion.article
-                    key={project.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -30 }}
-                    transition={{ duration: 0.4 }}
-                    className="group bg-card rounded-2xl overflow-hidden border border-border/80 hover:shadow-elevated hover:border-primary/20 transition-all duration-300 flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Image section */}
-                      <div className="aspect-[16/10] overflow-hidden bg-muted relative">
-                        <img
-                          src={project.image}
-                          alt={project.title}
-                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm ${tagColors[project.tag] || "bg-muted text-muted-foreground"}`}>
-                            {project.tag}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content Section */}
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-3 text-[10px] text-muted-foreground">
-                          <span className="font-semibold text-primary/80">{project.subtitle}</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {project.date}
-                          </span>
-                        </div>
-
-                        <h3 className="font-display text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {project.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-body leading-relaxed line-clamp-4">
-                          {project.description}
-                        </p>
-                      </div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 animate-fade-in">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-card rounded-2xl overflow-hidden border border-border/85 p-6 space-y-5 animate-pulse">
+                  <div className="aspect-[16/10] bg-muted rounded-xl" />
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-muted rounded w-1/4" />
+                      <div className="h-3 bg-muted rounded w-1/5" />
                     </div>
-
-                    {/* Footer Actions inside Card */}
-                    <div className="px-6 pb-6 pt-2 border-t border-border/30 flex items-center justify-between">
-                      {project.link && project.link !== "#" ? (
-                        <a 
-                          href={project.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-school-red-dark transition-colors cursor-pointer"
-                        >
-                          Acessar conteúdo <ArrowRight className="w-3.5 h-3.5" />
-                        </a>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground italic">Compartilhado no Mural</span>
-                      )}
-
-                      <div className="flex items-center gap-2">
-                        {/* Delete button (visible to Gestão for all, and to Student only for their own posts) */}
-                        {user && (user.role === "management" || (user.role === "student" && project.authorEmail === user.email)) && (
-                          <button
-                            onClick={() => handleDelete(project.id)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            title="Excluir publicação"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-
-                        {/* Like button */}
-                        <button
-                          onClick={() => handleLike(project.id)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            isLiked
-                              ? "bg-rose-500/10 text-rose-500"
-                              : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5"
-                          }`}
-                          title={isLiked ? "Descurtir" : "Curtir"}
-                        >
-                          <Heart className={`w-3.5 h-3.5 transition-transform duration-250 ${isLiked ? "fill-rose-500 scale-110" : ""}`} />
-                          <span>{project.likes}</span>
-                        </button>
-                      </div>
+                    <div className="h-5 bg-muted rounded w-3/4" />
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted rounded w-full" />
+                      <div className="h-3 bg-muted rounded w-5/6" />
                     </div>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                  </div>
+                  <div className="h-10 bg-muted/40 rounded-xl w-full pt-4" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+                <AnimatePresence mode="popLayout">
+                  {filteredProjects.map((project) => {
+                    const isLiked = likedPosts.includes(project.id);
+                    return (
+                      <motion.article
+                        key={project.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -30 }}
+                        transition={{ duration: 0.4 }}
+                        className="group bg-card rounded-2xl overflow-hidden border border-border/80 hover:shadow-elevated hover:border-primary/20 transition-all duration-300 flex flex-col justify-between"
+                      >
+                        <div>
+                          {/* Image section */}
+                          <div className="aspect-[16/10] overflow-hidden bg-muted relative">
+                            <img
+                              src={project.image}
+                              alt={project.title}
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                            />
+                            <div className="absolute top-3 left-3">
+                              <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm ${tagColors[project.tag] || "bg-muted text-muted-foreground"}`}>
+                                {project.tag}
+                              </span>
+                            </div>
+                          </div>
 
-          {/* Empty State */}
-          {filteredProjects.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20 relative z-10"
-            >
-              <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mx-auto mb-4">
-                <Search className="w-6 h-6 text-muted-foreground/60" />
-              </div>
-              <h3 className="font-display font-bold text-lg text-foreground mb-1">Nenhuma publicação encontrada</h3>
-              <p className="text-muted-foreground text-xs font-body max-w-sm mx-auto">
-                Tente ajustar os termos da pesquisa ou selecione outra categoria para ver outros posts.
-              </p>
-            </motion.div>
+                          {/* Content Section */}
+                          <div className="p-6">
+                            <div className="flex items-center justify-between mb-3 text-[10px] text-muted-foreground">
+                              <span className="font-semibold text-primary/80">{project.subtitle}</span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {project.date}
+                              </span>
+                            </div>
+
+                            <h3 className="font-display text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                              {project.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body leading-relaxed line-clamp-4">
+                              {project.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Footer Actions inside Card */}
+                        <div className="px-6 pb-6 pt-2 border-t border-border/30 flex items-center justify-between">
+                          {project.link && project.link !== "#" ? (
+                            <a 
+                              href={project.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-school-red-dark transition-colors cursor-pointer"
+                            >
+                              Acessar conteúdo <ArrowRight className="w-3.5 h-3.5" />
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground italic">Compartilhado no Mural</span>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            {/* Delete button (visible to Gestão for all, and to Student only for their own posts) */}
+                            {user && (user.role === "management" || (user.role === "student" && project.authorEmail === user.email)) && (
+                              <button
+                                onClick={() => handleDelete(project.id)}
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                title="Excluir publicação"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            {/* Like button */}
+                            <button
+                              onClick={() => handleLike(project.id)}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                isLiked
+                                  ? "bg-rose-500/10 text-rose-500"
+                                  : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5"
+                              }`}
+                              title={isLiked ? "Descurtir" : "Curtir"}
+                            >
+                              <Heart className={`w-3.5 h-3.5 transition-transform duration-250 ${isLiked ? "fill-rose-500 scale-110" : ""}`} />
+                              <span>{project.likes}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </motion.article>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Empty State */}
+              {filteredProjects.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-20 relative z-10"
+                >
+                  <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-6 h-6 text-muted-foreground/60" />
+                  </div>
+                  <h3 className="font-display font-bold text-lg text-foreground mb-1">Nenhuma publicação encontrada</h3>
+                  <p className="text-muted-foreground text-xs font-body max-w-sm mx-auto">
+                    Tente ajustar os termos da pesquisa ou selecione outra categoria para ver outros posts.
+                  </p>
+                </motion.div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, User, Lock, Shield, Check, AlertCircle, ArrowLeft, Key } from "lucide-react";
 import { toast } from "sonner";
+import { dbService } from "../lib/dbService";
 
 export interface UserType {
   email: string;
@@ -32,7 +33,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
 
   const [error, setError] = useState<string | null>(null);
 
-  // Reset states when modal is opened/closed or view changes
+  // Reset states when modal is opened/closed
   useEffect(() => {
     setError(null);
     if (!isOpen) {
@@ -46,15 +47,13 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
       setNewPassword("");
       setConfirmPassword("");
     }
-  }, [isOpen, view]);
+  }, [isOpen]);
 
   const validateEmail = (emailStr: string): "student" | "management" | null => {
     const cleanEmail = emailStr.trim().toLowerCase();
     
-    // Check for student email: ra + digito + @al.educacao.sp.gov.br
-    // RA can have optional SP/sp at the end, followed by domain
-    // Example: 123456789x@al.educacao.sp.gov.br or 000123456789xsp@al.educacao.sp.gov.br
-    const studentRegex = /^\d+[xX\d](?:sp|SP)?@al\.educacao\.sp\.gov\.br$/;
+    // Check for student email: ra<digits><digit>@al.educacao.sp.gov.br
+    const studentRegex = /^ra\d+@al\.educacao\.sp\.gov\.br$/i;
     if (studentRegex.test(cleanEmail)) {
       return "student";
     }
@@ -63,7 +62,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
     if (
       cleanEmail.endsWith("@educacao.sp.gov.br") ||
       cleanEmail.endsWith("@professor.educacao.sp.gov.br") ||
-      cleanEmail === "direcao@ruy.br" || // Testing fallbacks
+      cleanEmail === "direcao@ruy.br" ||
       cleanEmail === "admin@admin.com"
     ) {
       return "management";
@@ -72,49 +71,33 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
     return null;
   };
 
-  const getRegisteredUsers = () => {
-    if (typeof window === "undefined") return {};
-    try {
-      const data = localStorage.getItem("ruy_registered_users");
-      return data ? JSON.parse(data) : {};
-    } catch {
-      return {};
-    }
-  };
-
-  const saveRegisteredUser = (user: any) => {
-    if (typeof window === "undefined") return;
-    try {
-      const users = getRegisteredUsers();
-      users[user.email.toLowerCase()] = user;
-      localStorage.setItem("ruy_registered_users", JSON.stringify(users));
-    } catch (e) {
-      console.error("Erro ao salvar usuário:", e);
-    }
-  };
-
   // Backwards compatibility: register currently active session user if not registered yet
   useEffect(() => {
-    if (isOpen) {
-      const savedUserStr = localStorage.getItem("ruy_user");
-      if (savedUserStr) {
-        try {
-          const savedUser = JSON.parse(savedUserStr);
-          const users = getRegisteredUsers();
-          if (savedUser && savedUser.email && !users[savedUser.email.toLowerCase()]) {
-            saveRegisteredUser({
-              email: savedUser.email,
-              name: savedUser.name,
-              role: savedUser.role,
-              password: "1234" // Default fallback password
-            });
-          }
-        } catch {}
+    const registerFallback = async () => {
+      if (isOpen) {
+        const savedUserStr = localStorage.getItem("ruy_user");
+        if (savedUserStr) {
+          try {
+            const savedUser = JSON.parse(savedUserStr);
+            if (savedUser && savedUser.email) {
+              const existing = await dbService.getUser(savedUser.email);
+              if (!existing) {
+                await dbService.createUser({
+                  email: savedUser.email,
+                  name: savedUser.name,
+                  role: savedUser.role,
+                  password: "1234" // Default fallback password
+                });
+              }
+            }
+          } catch {}
+        }
       }
-    }
+    };
+    registerFallback();
   }, [isOpen]);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -137,54 +120,58 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
       return;
     }
 
-    const users = getRegisteredUsers();
-    const existingUser = users[cleanEmail.toLowerCase()];
+    try {
+      const existingUser = await dbService.getUser(cleanEmail);
 
-    if (existingUser) {
-      if (existingUser.password !== password) {
-        setError("Senha incorreta para este e-mail acadêmico.");
-        return;
+      if (existingUser) {
+        if (existingUser.password !== password) {
+          setError("Senha incorreta para este e-mail acadêmico.");
+          return;
+        }
+        
+        const loggedUser: UserType = {
+          email: existingUser.email,
+          name: existingUser.name,
+          role: existingUser.role,
+        };
+        
+        onLogin(loggedUser);
+        toast.success(`Seja bem-vindo(a) de volta, ${existingUser.name}!`, {
+          description: `Conectado como ${existingUser.role === "management" ? "Gestão Escolar" : "Estudante"}.`
+        });
+      } else {
+        // Register new user
+        const newUserObj = {
+          email: cleanEmail,
+          name: cleanName,
+          role: role,
+          password: password
+        };
+        await dbService.createUser(newUserObj);
+
+        const loggedUser: UserType = {
+          email: cleanEmail,
+          name: cleanName,
+          role: role,
+        };
+        
+        onLogin(loggedUser);
+        toast.success(`Cadastro e login efetuados com sucesso!`, {
+          description: `Seja bem-vindo(a) à plataforma, ${cleanName}.`
+        });
       }
-      
-      const loggedUser: UserType = {
-        email: existingUser.email,
-        name: existingUser.name,
-        role: existingUser.role,
-      };
-      
-      onLogin(loggedUser);
-      toast.success(`Seja bem-vindo(a) de volta, ${existingUser.name}!`, {
-        description: `Conectado como ${existingUser.role === "management" ? "Gestão Escolar" : "Estudante"}.`
-      });
-    } else {
-      // Register new user
-      const newUserObj = {
-        email: cleanEmail,
-        name: cleanName,
-        role: role,
-        password: password
-      };
-      saveRegisteredUser(newUserObj);
 
-      const loggedUser: UserType = {
-        email: cleanEmail,
-        name: cleanName,
-        role: role,
-      };
-      
-      onLogin(loggedUser);
-      toast.success(`Cadastro e login efetuados com sucesso!`, {
-        description: `Seja bem-vindo(a) à plataforma, ${cleanName}.`
-      });
+      setEmail("");
+      setName("");
+      setPassword("");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao autenticar. Verifique sua conexão.");
     }
-
-    setEmail("");
-    setName("");
-    setPassword("");
-    onClose();
   };
 
-  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -194,23 +181,28 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
       return;
     }
 
-    const users = getRegisteredUsers();
-    if (!users[cleanEmail]) {
-      setError("Este e-mail institucional não está cadastrado no site.");
-      return;
+    try {
+      const user = await dbService.getUser(cleanEmail);
+      if (!user) {
+        setError("Este e-mail institucional não está cadastrado no site.");
+        return;
+      }
+
+      // Generate random 6-digit verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      
+      // Simulate sending email
+      toast.info(`[SIMULAÇÃO] Código de recuperação enviado!`, {
+        duration: 15000,
+        description: `Código: ${code} (Copie este código para redefinir sua senha).`
+      });
+
+      setView("verify_code");
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao buscar e-mail. Verifique sua conexão.");
     }
-
-    // Generate random 6-digit verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    
-    // Simulate sending email
-    toast.info(`[SIMULAÇÃO] Código de recuperação enviado!`, {
-      duration: 15000,
-      description: `Código: ${code} (Copie este código para redefinir sua senha).`
-    });
-
-    setView("verify_code");
   };
 
   const handleVerifyCodeSubmit = (e: React.FormEvent) => {
@@ -225,7 +217,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
     setView("reset_password");
   };
 
-  const handleResetPasswordSubmit = (e: React.FormEvent) => {
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -239,26 +231,27 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
       return;
     }
 
-    const users = getRegisteredUsers();
-    const cleanEmail = recoveryEmail.trim().toLowerCase();
-    const userData = users[cleanEmail];
+    try {
+      const cleanEmail = recoveryEmail.trim().toLowerCase();
+      const updated = await dbService.updateUserPassword(cleanEmail, newPassword);
 
-    if (userData) {
-      userData.password = newPassword;
-      saveRegisteredUser(userData);
+      if (updated) {
+        toast.success("Senha redefinida com sucesso!", {
+          description: "Agora você pode entrar na sua conta com a nova senha."
+        });
 
-      toast.success("Senha redefinida com sucesso!", {
-        description: "Agora você pode entrar na sua conta com a nova senha."
-      });
-
-      setRecoveryEmail("");
-      setGeneratedCode("");
-      setInputCode("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setView("login");
-    } else {
-      setError("Erro ao redefinir senha. Tente novamente.");
+        setRecoveryEmail("");
+        setGeneratedCode("");
+        setInputCode("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setView("login");
+      } else {
+        setError("Erro ao redefinir senha. Tente novamente.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao redefinir senha. Verifique sua conexão.");
     }
   };
 
