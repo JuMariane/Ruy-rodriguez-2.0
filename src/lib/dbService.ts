@@ -6,6 +6,7 @@ import baciaHidro from '../assets/bacia-hidrografica.jpg';
 import chiquinhaImg from '../assets/chiquinha-gonzaga.jpg';
 import teatroOriki from '../assets/teatro-oriki.jpg';
 import sambaRuy from '../assets/samba-ruy.jpg';
+import nzingaImg from '../assets/nzinga-mbandi.jpg';
 
 export interface User {
   email: string;
@@ -57,7 +58,7 @@ const initialProjects: ProjectPost[] = [
     subtitle: "Visita Técnica e Análises",
     date: "Maio 2025",
     description: "Coleta e análise de amostras de água em nascentes do Parque Itajaí para verificar a qualidade hídrica regional.",
-    tag: "Ciências",
+    tag: "Meio Ambiente",
     image: baciaHidro,
     link: "#",
     likes: 15,
@@ -95,6 +96,50 @@ const initialProjects: ProjectPost[] = [
     link: "#",
     likes: 31,
   },
+  {
+    id: "proj-7",
+    title: "Projeto Nzinga Mbandi",
+    subtitle: "Trilha de Educação Antirracista",
+    date: "Novembro 2023",
+    description: "Atividade interdisciplinar sobre a rainha guerreira Nzinga Mbandi e sua liderança na resistência à escravidão.",
+    tag: "Eletivas",
+    image: nzingaImg,
+    link: "#",
+    likes: 18,
+  },
+  {
+    id: "proj-8",
+    title: "Maculelê e Danças Afro-Brasileiras",
+    subtitle: "Cultura Popular e Movimento",
+    date: "Novembro 2023",
+    description: "Atividade de expressão corporal e resgate da dança folclórica Maculelê com bastões e dança do Carimbó.",
+    tag: "Eletivas",
+    image: projetoBanner,
+    link: "#",
+    likes: 22,
+  },
+  {
+    id: "proj-9",
+    title: "Máscaras Africanas e Arte de Resistência",
+    subtitle: "História e Resistência",
+    date: "Novembro 2023",
+    description: "Exposição artística com réplicas de máscaras tradicionais para discutir a religiosidade e a diversidade das culturas africanas.",
+    tag: "Eletivas",
+    image: teatroOriki,
+    link: "#",
+    likes: 14,
+  },
+  {
+    id: "proj-10",
+    title: "Propaganda Publicitária Antirracista",
+    subtitle: "Língua Portuguesa e Conscientização",
+    date: "Novembro 2023",
+    description: "Criação de propagandas publicitárias em vídeo contra o preconceito racial e homenagem ao rapper Sabotage.",
+    tag: "Eletivas",
+    image: sambaRuy,
+    link: "#",
+    likes: 27,
+  }
 ];
 
 // LocalStorage helpers
