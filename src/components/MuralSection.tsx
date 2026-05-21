@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ArrowRight, Plus, X, Image, Search, Heart, Pin } from "lucide-react";
 import { toast } from "sonner";
 
-import projetoBanner from "@/assets/projeto-banner.jpg";
-import visitaIac from "@/assets/visita-iac.jpg";
-import baciaHidro from "@/assets/bacia-hidrografica.jpg";
-import chiquinhaImg from "@/assets/chiquinha-gonzaga.jpg";
-import teatroOriki from "@/assets/teatro-oriki.jpg";
-import sambaRuy from "@/assets/samba-ruy.jpg";
+import projetoBanner from "@/assets/projeto-banner.png";
+import visitaIac from "@/assets/visita-iac.png";
+import baciaHidro from "@/assets/bacia-hidrografica.png";
+import chiquinhaImg from "@/assets/chiquinha-gonzaga.png";
+import teatroOriki from "@/assets/teatro-oriki.png";
+import sambaRuy from "@/assets/samba-ruy.png";
 
 interface ProjectPost {
   id: string;
@@ -147,6 +147,7 @@ const MuralSection = () => {
 
   // Form states
   const [selectedTag, setSelectedTag] = useState("Eletivas");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -158,10 +159,50 @@ const MuralSection = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size is under 15MB for local compression (browser limit)
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error("A imagem selecionada é muito grande. Escolha uma foto com menos de 15MB.");
+        return;
+      }
+
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const img = new window.Image();
+        img.src = reader.result as string;
+        img.onload = () => {
+          // Compress using canvas to prevent exceeding localStorage quota
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 600; // Optimal width for cards
+          const MAX_HEIGHT = 450; // Optimal height for cards
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Get compressed jpeg data url (quality 0.6)
+            // This compresses images to ~20-50KB instead of 3MB+!
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6);
+            setImagePreview(compressedDataUrl);
+          } else {
+            setImagePreview(reader.result as string);
+          }
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -169,15 +210,17 @@ const MuralSection = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !author || !description) {
-      toast.error("Por favor, preencha os campos obrigatórios (Título, Autor e Descrição).");
+    if (!title || (!isAnonymous && !author) || !description) {
+      toast.error("Por favor, preencha os campos obrigatórios (Título, " + (isAnonymous ? "" : "Autor ") + "e Descrição).");
       return;
     }
+
+    const authorDisplayName = isAnonymous ? "Anônimo" : author;
 
     const newPost: ProjectPost = {
       id: `custom-${Date.now()}`,
       title,
-      subtitle: subtitle || author,
+      subtitle: subtitle || authorDisplayName,
       date: "Hoje",
       description,
       tag: selectedTag,
@@ -186,13 +229,24 @@ const MuralSection = () => {
       likes: 0,
     };
 
-    setProjectList([newPost, ...projectList]);
-    toast.success("Publicação adicionada ao mural com sucesso!");
+    try {
+      const updatedList = [newPost, ...projectList];
+      setProjectList(updatedList);
+      
+      // Tentativa de salvar imediatamente para detectar erros de cota
+      localStorage.setItem("ruy_mural_posts", JSON.stringify(updatedList));
+      toast.success("Publicação adicionada ao mural com sucesso!");
+    } catch (error) {
+      console.error("Erro de persistência local:", error);
+      toast.error("Erro ao salvar! A imagem pode ser muito pesada. Tente com outra foto menor.");
+      return;
+    }
 
     // Reset states
     setTitle("");
     setSubtitle("");
     setAuthor("");
+    setIsAnonymous(false);
     setDescription("");
     setImageFile(null);
     setImagePreview(null);
@@ -484,17 +538,36 @@ const MuralSection = () => {
                 {/* Nome e Título */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="author" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
-                      Seu Nome & Turma / Cargo *
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="author" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Seu Nome & Turma / Cargo {!isAnonymous && "*"}
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={isAnonymous}
+                          onChange={(e) => {
+                            setIsAnonymous(e.target.checked);
+                            if (e.target.checked) setAuthor("");
+                          }}
+                          className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+                        />
+                        Anônimo
+                      </label>
+                    </div>
                     <input
                       id="author"
                       type="text"
-                      required
-                      value={author}
+                      required={!isAnonymous}
+                      disabled={isAnonymous}
+                      value={isAnonymous ? "Anônimo" : author}
                       onChange={(e) => setAuthor(e.target.value)}
-                      placeholder="Ex: João - 3º Ano B ou Profª Marina"
-                      className="w-full px-3.5 py-2.5 text-sm bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                      placeholder={isAnonymous ? "Seu nome será ocultado" : "Ex: João - 3º Ano B ou Profª Marina"}
+                      className={`w-full px-3.5 py-2.5 text-sm border rounded-xl transition-colors focus:outline-none focus:border-primary/50 ${
+                        isAnonymous 
+                          ? "bg-muted/40 text-muted-foreground border-border/50 cursor-not-allowed" 
+                          : "bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                      }`}
                     />
                   </div>
                   <div>
