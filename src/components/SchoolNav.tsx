@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { label: "Início", href: "#inicio" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Projetos", href: "#projetos" },
-  { label: "Educação Antirracista", href: "#antirracista" },
-  { label: "Contato", href: "#contato" },
+  { label: "A Escola", href: "#sobre" },
+  { label: "Turnos e Horários", href: "#horarios" },
+  { label: "Vida Escolar", href: "#vida-escolar" },
+  { label: "Documentos", href: "#documentos" },
+  { label: "Dúvidas", href: "#faq" },
 ];
 
 const SchoolNav = () => {

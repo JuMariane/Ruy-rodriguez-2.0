@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { BookOpen, Users, Microscope, Globe, Monitor, ShoppingCart, Briefcase } from "lucide-react";
+import { BookOpen, Users, Microscope, Globe, Monitor, ShoppingCart, Briefcase, Info, Laptop, MapPin } from "lucide-react";
 import fachadaImg from "@/assets/fachada-escola.png";
 
 const features = [
@@ -39,6 +39,7 @@ const AboutSection = () => {
   return (
     <section id="sobre" className="py-24 bg-background">
       <div className="container mx-auto px-4">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -47,14 +48,13 @@ const AboutSection = () => {
           className="text-center mb-16"
         >
           <span className="text-sm font-semibold tracking-widest uppercase text-primary mb-2 block">
-            Quem Somos
+            A Escola
           </span>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
             Uma escola que transforma
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-body">
-            A Escola Estadual Ruy Rodriguez é uma escola de <strong className="text-foreground">período integral</strong> (14h30 às 21h30), 
-            referência em educação pública com cursos técnicos profissionalizantes em Campinas.
+            A Escola Estadual Ruy Rodriguez é referência em educação pública e profissional em Campinas, operando no modelo de Ensino Integral (PEI).
           </p>
         </motion.div>
 
@@ -79,17 +79,18 @@ const AboutSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-12 flex justify-center"
+          className="mb-20 flex justify-center"
         >
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/10 border border-primary/20">
             <BookOpen className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-foreground">
-              Escola Integral — 14h30 às 21h30
+              Programa de Ensino Integral (PEI)
             </span>
           </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid de Diferenciais */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
           {features.map((feature, i) => (
             <motion.div
               key={feature.title}
@@ -111,6 +112,123 @@ const AboutSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Patrono & Infraestrutura */}
+        <div className="grid lg:grid-cols-2 gap-12 mb-24 items-stretch">
+          {/* Patrono */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-school-cream rounded-2xl p-8 border border-border flex flex-col justify-between"
+          >
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold uppercase tracking-wider mb-6">
+                <Users className="w-3.5 h-3.5" /> Nosso Patrono
+              </div>
+              <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                Prof. Ruy Rodriguez
+              </h3>
+              <p className="text-muted-foreground font-body leading-relaxed mb-4">
+                O Professor Ruy Rodriguez foi um ilustre educador, jurista e líder comunitário em Campinas. Destacou-se pelo seu profundo compromisso social e por sua visão transformadora sobre o papel da educação na vida dos jovens.
+              </p>
+              <p className="text-muted-foreground font-body leading-relaxed">
+                Sua maior contribuição social foi a fundação da <strong>"Guardinha de Campinas"</strong> (Associação de Educação do Homem de Amanhã), uma instituição pioneira que há décadas promove a formação profissional, inserção no mercado de trabalho e amparo pedagógico para milhares de jovens da região. A nossa escola carrega com orgulho seu nome e seu legado de transformação social.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Ficha Técnica e Infraestrutura */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-card rounded-2xl p-8 border border-border flex flex-col justify-between"
+          >
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold uppercase tracking-wider mb-6">
+                <Info className="w-3.5 h-3.5" /> Ficha Técnica & Recursos
+              </div>
+              <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
+                Infraestrutura Completa
+              </h3>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Laptop className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Equipamentos Tecnológicos</h4>
+                    <p className="text-xs text-muted-foreground">75 tablets dedicados, 52 notebooks portáteis e Laboratório de Informática completo para as aulas técnicas de Desenvolvimento de Sistemas.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Microscope className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Laboratório Multiuso</h4>
+                    <p className="text-xs text-muted-foreground">Espaço equipado para práticas científicas, física, química e biologia, promovendo o ensino investigativo.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Info className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Identificação Escolar</h4>
+                    <p className="text-xs text-muted-foreground"><strong>Código CIE:</strong> 905471 | <strong>Diretoria de Ensino:</strong> Campinas Oeste. Acessibilidade garantida com rampas e banheiros adaptados.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Localização / Google Maps */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="rounded-2xl overflow-hidden border border-border shadow-soft"
+        >
+          <div className="p-6 bg-card border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                <MapPin className="text-primary w-5 h-5" /> Nossa Localização
+              </h3>
+              <p className="text-sm text-muted-foreground font-body mt-1">
+                R. João Batista Morato do Canto, s/n - Parque Industrial, Campinas - SP, 13031-770
+              </p>
+            </div>
+            <a 
+              href="https://maps.google.com/?q=E.E.+Prof.+Ruy+Rodriguez+Campinas" 
+              target="_blank" 
+              rel="noreferrer"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-school-red-dark transition-colors"
+            >
+              Abrir no Google Maps
+            </a>
+          </div>
+          <div className="w-full h-80 bg-muted">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3674.341103681423!2d-47.086307324688645!3d-22.919253479247656!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8c66e2c3ea0e9%3A0xe54e3d304a0808a3!2sE.E.%20Prof.%20Ruy%20Rodriguez!5e0!3m2!1spt-BR!2sbr!4v1716300000000!5m2!1spt-BR!2sbr"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Mapa de localização da escola"
+            />
+          </div>
+        </motion.div>
       </div>
     </section>
   );

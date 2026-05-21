@@ -1,8 +1,11 @@
 import SchoolNav from "@/components/SchoolNav";
 import HeroSection from "@/components/HeroSection";
 import AboutSection from "@/components/AboutSection";
-import ProjectsSection from "@/components/ProjectsSection";
+import SchedulesSection from "@/components/SchedulesSection";
+import SchoolLifeSection from "@/components/SchoolLifeSection";
 import AntiracistSection from "@/components/AntiracistSection";
+import DownloadsSection from "@/components/DownloadsSection";
+import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import SchoolFooter from "@/components/SchoolFooter";
 
@@ -12,8 +15,11 @@ const Index = () => {
       <SchoolNav />
       <HeroSection />
       <AboutSection />
-      <ProjectsSection />
+      <SchedulesSection />
+      <SchoolLifeSection />
       <AntiracistSection />
+      <DownloadsSection />
+      <FAQSection />
       <ContactSection />
       <SchoolFooter />
     </div>

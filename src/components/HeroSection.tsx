@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
+import { Sun, Moon } from "lucide-react";
 import heroImg from "@/assets/teatro-itinerario.jpg";
 
 const HeroSection = () => {
   return (
-    <section id="inicio" className="relative min-h-[85vh] flex items-center overflow-hidden pt-16">
+    <section id="inicio" className="relative min-h-[90vh] flex items-center overflow-hidden pt-16">
       {/* Background image */}
       <div className="absolute inset-0">
         <img
@@ -68,17 +69,40 @@ const HeroSection = () => {
             className="flex flex-wrap gap-4"
           >
             <a
-              href="#projetos"
-              className="inline-flex items-center px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-school-red-dark transition-colors shadow-hero"
+              href="#horarios-fundamental"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-amber-500 text-foreground font-semibold text-sm hover:bg-amber-600 transition-colors shadow-soft"
             >
-              Nossos Projetos
+              <Sun className="w-4 h-4" /> Turno da Manhã - Fundamental
             </a>
             <a
-              href="#sobre"
-              className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-foreground/15 text-primary-foreground font-semibold text-sm backdrop-blur-sm border border-primary-foreground/20 hover:bg-primary-foreground/25 transition-colors"
+              href="#horarios-medio"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-school-red-dark transition-colors shadow-hero"
             >
-              Conheça a Escola
+              <Moon className="w-4 h-4" /> Turno da Tarde - Médio
             </a>
+          </motion.div>
+
+          {/* Mural de Avisos */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.5 }}
+            className="mt-10 p-5 rounded-xl bg-background/90 backdrop-blur-md border border-border shadow-soft max-w-xl"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mural de Avisos</h3>
+            </div>
+            <ul className="space-y-2 text-sm text-foreground/80 font-body">
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong>Matrículas Abertas:</strong> Período de matrículas e transferências para o ano letivo em andamento.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong>Reunião de Pais:</strong> Próxima sexta-feira na quadra coberta às 18h00.</span>
+              </li>
+            </ul>
           </motion.div>
         </motion.div>
       </div>
