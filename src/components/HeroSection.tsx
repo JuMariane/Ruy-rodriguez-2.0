@@ -81,29 +81,6 @@ const HeroSection = () => {
               <Moon className="w-4 h-4" /> Turno da Tarde - Médio
             </a>
           </motion.div>
-
-          {/* Mural de Avisos */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="mt-10 p-5 rounded-xl bg-background/90 backdrop-blur-md border border-border shadow-soft max-w-xl"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mural de Avisos</h3>
-            </div>
-            <ul className="space-y-2 text-sm text-foreground/80 font-body">
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold">•</span>
-                <span><strong>Matrículas Abertas:</strong> Período de matrículas e transferências para o ano letivo em andamento.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold">•</span>
-                <span><strong>Reunião de Pais:</strong> Próxima sexta-feira na quadra coberta às 18h00.</span>
-              </li>
-            </ul>
-          </motion.div>
         </motion.div>
       </div>
 
