@@ -4,24 +4,20 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 
 const faqs = [
   {
-    question: "Como funciona o modelo PEI (Ensino Integral) na escola?",
-    answer: "A escola funciona em regime de tempo integral com jornada de 7 horas diárias. O currículo une as disciplinas da Base Nacional Comum com a Parte Diversificada (Eletivas, Clubes Juvenis, Orientação de Estudos e Práticas de Ciências/Matemática), além do foco constante no Projeto de Vida do estudante.",
+    question: "Como funciona o modelo de Ensino Integral?",
+    answer: "A escola segue o modelo PEI, com 7 horas diárias. Além das matérias comuns, os alunos têm Eletivas, Clubes Juvenis e foco no Projeto de Vida.",
   },
   {
-    question: "Quais são os horários de entrada e saída?",
-    answer: "Os Anos Finais do Ensino Fundamental (6º ao 9º ano) entram às 07h00 e saem às 14h00. O Ensino Médio entra às 14h15 e sai às 21h15.",
+    question: "Quais refeições são servidas?",
+    answer: "No turno da manhã, servimos café da manhã e almoço. No turno da tarde/noite, servimos lanche e jantar.",
   },
   {
-    question: "Os alunos recebem refeições na escola?",
-    answer: "Sim. No turno da manhã são servidos o café da manhã e o almoço. No turno da tarde/noite são oferecidos o lanche da tarde e o jantar. Todas as refeições são gratuitas e balanceadas.",
+    question: "A escola oferece cursos técnicos?",
+    answer: "Sim, através do programa Novotec, o Ensino Médio (tarde) pode ter formação profissional integrada.",
   },
   {
-    question: "O que é o Novotec e quem pode fazer?",
-    answer: "O Novotec oferece cursos técnicos integrados para os estudantes do Ensino Médio. As opções em nossa escola abrangem Desenvolvimento de Sistemas, Administração e Vendas, integrados à grade letiva do período da tarde/noite.",
-  },
-  {
-    question: "Quais são os contatos oficiais da secretaria?",
-    answer: "Você pode falar com a secretaria da escola pelo telefone (19) 3261-1256 ou pelo e-mail oficial E905471A@educacao.sp.gov.br. O código identificador CIE da nossa instituição é 905471.",
+    question: "Onde encontro o calendário escolar?",
+    answer: "O calendário oficial fica disponível para consulta na secretaria e também é atualizado no nosso blog oficial.",
   },
 ];
 
@@ -33,7 +29,7 @@ const FAQSection = () => {
   };
 
   return (
-    <section id="faq" className="py-24 bg-background scroll-mt-16">
+    <section id="duvidas" className="py-24 bg-background scroll-mt-16">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div

@@ -8,7 +8,7 @@ const navLinks = [
   { label: "Turnos e Horários", href: "#horarios" },
   { label: "Vida Escolar", href: "#vida-escolar" },
   { label: "Documentos", href: "#documentos" },
-  { label: "Dúvidas", href: "#faq" },
+  { label: "Dúvidas", href: "#duvidas" },
 ];
 
 const SchoolNav = () => {

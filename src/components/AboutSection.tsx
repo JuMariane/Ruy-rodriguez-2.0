@@ -204,11 +204,11 @@ const AboutSection = () => {
                 <MapPin className="text-primary w-5 h-5" /> Nossa Localização
               </h3>
               <p className="text-sm text-muted-foreground font-body mt-1">
-                R. João Batista Morato do Canto, s/n - Parque Industrial, Campinas - SP, 13031-770
+                Rua Paulo Gliwkoff, 104 - Conj. Hab. Parque Itajaí, Campinas - SP, 13058-023
               </p>
             </div>
             <a 
-              href="https://maps.google.com/?q=E.E.+Prof.+Ruy+Rodriguez+Campinas" 
+              href="https://maps.google.com/?q=E.E.+Prof.+Ruy+Rodriguez+Rua+Paulo+Gliwkoff+104+Campinas" 
               target="_blank" 
               rel="noreferrer"
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-school-red-dark transition-colors"
@@ -218,7 +218,7 @@ const AboutSection = () => {
           </div>
           <div className="w-full h-80 bg-muted">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3674.341103681423!2d-47.086307324688645!3d-22.919253479247656!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8c66e2c3ea0e9%3A0xe54e3d304a0808a3!2sE.E.%20Prof.%20Ruy%20Rodriguez!5e0!3m2!1spt-BR!2sbr!4v1716300000000!5m2!1spt-BR!2sbr"
+              src="https://maps.google.com/maps?q=E.E.%20Prof.%20Ruy%20Rodriguez%2C%20Rua%20Paulo%20Gliwkoff%2C%20104%20-%20Conjunto%20Habitacional%20Parque%20Itaja%C3%AD%2C%20Campinas%20-%20SP&t=&z=17&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}

@@ -25,26 +25,26 @@ const ContactSection = () => {
             {
               icon: MapPin,
               title: "Endereço",
-              info: "Campinas, São Paulo",
-              detail: "Escola Estadual Ruy Rodriguez",
+              info: "Rua Paulo Gliwkoff, 104",
+              detail: "Conj. Hab. Parque Itajaí, Campinas - SP",
             },
             {
               icon: Clock,
               title: "Horário",
-              info: "Escola Integral",
-              detail: "14h30 às 21h30",
+              info: "Fundamental (6º ao 9º): 07h00 às 14h00",
+              detail: "Ensino Médio: 14h15 às 21h15",
             },
             {
               icon: Phone,
               title: "Telefone",
-              info: "Secretaria",
-              detail: "Entre em contato",
+              info: "(19) 3261-1256",
+              detail: "Secretaria Escolar",
             },
             {
               icon: Mail,
               title: "E-mail",
-              info: "Atendimento",
-              detail: "contato@eeruyrodriguez.edu.br",
+              info: "e905471a@educacao.sp.gov.br",
+              detail: "Atendimento Institucional",
             },
           ].map((item, i) => (
             <motion.div
