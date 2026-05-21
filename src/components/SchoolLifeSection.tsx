@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, ArrowRight, BookOpen, Star, Compass, ShieldCheck } from "lucide-react";
+import { Calendar, ArrowRight, BookOpen, Star, Compass, ShieldCheck, Pin } from "lucide-react";
 
 import projetoBanner from "@/assets/projeto-banner.jpg";
 import visitaIac from "@/assets/visita-iac.jpg";
@@ -144,17 +144,38 @@ const SchoolLifeSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <span className="text-sm font-semibold tracking-widest uppercase text-primary mb-2 block">
-            Galeria Pedagógica
+            Mural da Comunidade
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Projetos & Atividades Recentes
+            Projetos Pedagógicos & Recantos da Comunidade
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto font-body">
-            Veja na prática os projetos extracurriculares e visitas técnicas realizados em nossa escola.
+            Exposição de trabalhos e atividades extracurriculares desenvolvidas por alunos, professores e equipe escolar.
           </p>
+        </motion.div>
+
+        {/* Banner Informativo do Mural */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-3xl mx-auto mb-16 p-6 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center gap-4 text-center md:text-left"
+        >
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Pin className="w-6 h-6 text-primary rotate-45" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-foreground text-lg mb-1">
+              Como funciona este Mural Colaborativo?
+            </h3>
+            <p className="text-sm text-muted-foreground font-body leading-relaxed">
+              Diferente do formato antigo, o novo site conta com um espaço integrado para dar voz a todos! A gestão e os professores publicam comunicados, enquanto os alunos podem expor os projetos dos Clubes, Eletivas e Jornadas Científicas. <strong>Quer divulgar seu trabalho ou deixar um recado?</strong> Fale com o seu professor tutor ou procure a secretaria para incluir sua publicação.
+            </p>
+          </div>
         </motion.div>
 
         {/* Projetos Grid */}
