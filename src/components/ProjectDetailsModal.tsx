@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, ExternalLink } from "lucide-react";
+import { X, Calendar, ExternalLink, Plus } from "lucide-react";
 
 export interface ProjectDetails {
   title: string;
@@ -28,6 +29,15 @@ const tagColors: Record<string, string> = {
 };
 
 const ProjectDetailsModal = ({ isOpen, onClose, project }: ProjectDetailsModalProps) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Reset selected image when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedImage(null);
+    }
+  }, [isOpen]);
+
   if (!project) return null;
 
   return (
@@ -141,14 +151,18 @@ const ProjectDetailsModal = ({ isOpen, onClose, project }: ProjectDetailsModalPr
                     {project.gallery.map((imgUrl, idx) => (
                       <div
                         key={idx}
-                        className="aspect-[4/3] rounded-lg overflow-hidden border border-border/30 shadow-soft hover:scale-[1.02] transition-transform duration-300 bg-muted"
+                        onClick={() => setSelectedImage(imgUrl)}
+                        className="aspect-[4/3] rounded-lg overflow-hidden border border-border/30 shadow-soft hover:scale-[1.05] hover:shadow-medium cursor-zoom-in transition-all duration-300 bg-muted relative group"
                       >
                         <img
                           src={imgUrl}
                           alt={`Foto da atividade ${idx + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           loading="lazy"
                         />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-300 flex items-center justify-center">
+                          <Plus className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 drop-shadow-md" />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -170,6 +184,42 @@ const ProjectDetailsModal = ({ isOpen, onClose, project }: ProjectDetailsModalPr
               )}
             </div>
           </motion.div>
+
+          {/* Lightbox for Gallery Images */}
+          <AnimatePresence>
+            {selectedImage && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute inset-0 cursor-zoom-out"
+                />
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="relative max-w-4xl max-h-[85vh] z-10 flex items-center justify-center"
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Imagem expandida"
+                    className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-elevated border border-white/10"
+                  />
+                  <button
+                    onClick={() => setSelectedImage(null)}
+                    className="absolute -top-12 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all"
+                    aria-label="Fechar imagem"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </AnimatePresence>
