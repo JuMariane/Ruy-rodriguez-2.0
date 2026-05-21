@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
-import heroImg from "@/assets/teatro-itinerario.jpg";
+import heroImg from "@/assets/borboleta-escola.jpg";
 
 const HeroSection = () => {
   return (
@@ -9,7 +9,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img
           src={heroImg}
-          alt="Escola Ruy Rodriguez - Estudantes"
+          alt="Escola Ruy Rodriguez - Jardim e Fachada"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/85 via-foreground/60 to-foreground/20" />
