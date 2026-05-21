@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { Calendar, ArrowRight } from "lucide-react";
 
-import projetoBanner from "@/assets/projeto-banner.png";
-import visitaIac from "@/assets/visita-iac.png";
-import baciaHidro from "@/assets/bacia-hidrografica.png";
-import chiquinhaImg from "@/assets/chiquinha-gonzaga.png";
-import teatroOriki from "@/assets/teatro-oriki.png";
-import sambaRuy from "@/assets/samba-ruy.png";
+import projetoBanner from "@/assets/projeto-banner.jpg";
+import visitaIac from "@/assets/visita-iac.jpg";
+import baciaHidro from "@/assets/bacia-hidrografica.jpg";
+import chiquinhaImg from "@/assets/chiquinha-gonzaga.jpg";
+import teatroOriki from "@/assets/teatro-oriki.jpg";
+import sambaRuy from "@/assets/samba-ruy.jpg";
 
 const projects = [
   {

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, ArrowRight, Plus, X, Image, Search, Heart, Pin } from "lucide-react";
+import { Calendar, ArrowRight, Plus, X, Image, Search, Heart, Pin, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import projetoBanner from "@/assets/projeto-banner.png";
-import visitaIac from "@/assets/visita-iac.png";
-import baciaHidro from "@/assets/bacia-hidrografica.png";
-import chiquinhaImg from "@/assets/chiquinha-gonzaga.png";
-import teatroOriki from "@/assets/teatro-oriki.png";
-import sambaRuy from "@/assets/samba-ruy.png";
+import projetoBanner from "@/assets/projeto-banner.jpg";
+import visitaIac from "@/assets/visita-iac.jpg";
+import baciaHidro from "@/assets/bacia-hidrografica.jpg";
+import chiquinhaImg from "@/assets/chiquinha-gonzaga.jpg";
+import teatroOriki from "@/assets/teatro-oriki.jpg";
+import sambaRuy from "@/assets/samba-ruy.jpg";
 
 interface ProjectPost {
   id: string;
@@ -20,6 +20,7 @@ interface ProjectPost {
   image: string;
   link: string;
   likes: number;
+  authorEmail?: string;
 }
 
 const initialProjects: ProjectPost[] = [
@@ -100,7 +101,14 @@ const tagColors: Record<string, string> = {
   Recado: "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/60",
 };
 
-const MuralSection = () => {
+import { UserType } from "./LoginModal";
+
+interface MuralSectionProps {
+  user: UserType | null;
+  onOpenLogin: () => void;
+}
+
+const MuralSection = ({ user, onOpenLogin }: MuralSectionProps) => {
   // Persistence state
   const [projectList, setProjectList] = useState<ProjectPost[]>(() => {
     if (typeof window !== "undefined") {
@@ -227,6 +235,7 @@ const MuralSection = () => {
       image: imagePreview || "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop&q=60",
       link: link || "#",
       likes: 0,
+      authorEmail: user?.email,
     };
 
     try {
@@ -274,6 +283,32 @@ const MuralSection = () => {
       );
     }
   };
+
+  const handleDelete = (id: string) => {
+    const postToDelete = projectList.find((p) => p.id === id);
+    if (!postToDelete) return;
+
+    const canDelete =
+      user?.role === "management" ||
+      (user?.role === "student" && postToDelete.authorEmail === user.email);
+
+    if (!canDelete) {
+      toast.error("Você não tem permissão para excluir esta publicação.");
+      return;
+    }
+
+    const updatedList = projectList.filter((p) => p.id !== id);
+    setProjectList(updatedList);
+    localStorage.setItem("ruy_mural_posts", JSON.stringify(updatedList));
+    toast.success("Publicação excluída com sucesso!");
+  };
+
+  // Prefill author name when modal opens
+  useEffect(() => {
+    if (isModalOpen && user) {
+      setAuthor(user.name);
+    }
+  }, [isModalOpen, user]);
 
   const filters = ["Todos", "Eletivas", "Clubes", "Técnico / Novotec", "Ciências", "Cultura", "Recado"];
 
@@ -324,12 +359,23 @@ const MuralSection = () => {
                   Espaço Colaborativo Ruy Rodriguez
                 </h3>
                 <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-xl">
-                  Qualquer pessoa da comunidade escolar pode publicar! Suas postagens ficam salvas neste navegador. Compartilhe o que você anda criando!
+                  {user 
+                    ? `Identificado como ${user.role === "management" ? "Gestão" : "Estudante"}. Compartilhe o que você anda criando!`
+                    : "Espaço restrito para alunos e gestão. Entre com seu e-mail acadêmico para publicar ou remover postagens."}
                 </p>
               </div>
             </div>
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                if (!user) {
+                  toast.error("Acesso Restrito", {
+                    description: "Por favor, faça login com seu e-mail acadêmico para publicar no mural."
+                  });
+                  onOpenLogin();
+                } else {
+                  setIsModalOpen(true);
+                }
+              }}
               className="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-school-red-dark active:scale-[0.98] hover:scale-[1.02] transition-all shrink-0 shadow-hero"
             >
               <Plus className="w-4 h-4" /> Criar Publicação
@@ -434,19 +480,32 @@ const MuralSection = () => {
                         <span className="text-[10px] text-muted-foreground italic">Compartilhado no Mural</span>
                       )}
 
-                      {/* Like button */}
-                      <button
-                        onClick={() => handleLike(project.id)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                          isLiked
-                            ? "bg-rose-500/10 text-rose-500"
-                            : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5"
-                        }`}
-                        title={isLiked ? "Descurtir" : "Curtir"}
-                      >
-                        <Heart className={`w-3.5 h-3.5 transition-transform duration-250 ${isLiked ? "fill-rose-500 scale-110" : ""}`} />
-                        <span>{project.likes}</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {/* Delete button (visible to Gestão for all, and to Student only for their own posts) */}
+                        {user && (user.role === "management" || (user.role === "student" && project.authorEmail === user.email)) && (
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            title="Excluir publicação"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        {/* Like button */}
+                        <button
+                          onClick={() => handleLike(project.id)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            isLiked
+                              ? "bg-rose-500/10 text-rose-500"
+                              : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5"
+                          }`}
+                          title={isLiked ? "Descurtir" : "Curtir"}
+                        >
+                          <Heart className={`w-3.5 h-3.5 transition-transform duration-250 ${isLiked ? "fill-rose-500 scale-110" : ""}`} />
+                          <span>{project.likes}</span>
+                        </button>
+                      </div>
                     </div>
                   </motion.article>
                 );
