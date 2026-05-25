@@ -85,9 +85,21 @@ const SchoolFooter = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/10 pt-6 text-center">
+        <div className="border-t border-primary-foreground/10 pt-6 text-center space-y-2">
           <p className="text-xs text-primary-foreground/40 font-body">
             © {new Date().getFullYear()} Escola Estadual Ruy Rodriguez. Todos os direitos reservados.
+          </p>
+          <p className="text-[11px] text-primary-foreground/30 font-body leading-relaxed max-w-2xl mx-auto">
+            Desenvolvido para o TCC com a finalidade de aprimorar o{" "}
+            <a
+              href="https://escolaruyrodriguez.wordpress.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-foreground/40 hover:text-primary underline transition-colors"
+            >
+              site antigo (WordPress)
+            </a>{" "}
+            desenvolvido pelas alunas do terceiro ano do Ensino Médio do Técnico de Desenvolvimento de Sistemas.
           </p>
         </div>
       </div>
