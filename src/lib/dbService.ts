@@ -8,13 +8,6 @@ import teatroOriki from '../assets/teatro-oriki.jpg';
 import sambaRuy from '../assets/samba-ruy.jpg';
 import nzingaImg from '../assets/nzinga-mbandi.jpg';
 
-export interface User {
-  email: string;
-  name: string;
-  role: 'student' | 'management';
-  password?: string;
-}
-
 export interface ProjectPost {
   id: string;
   title: string;
@@ -143,29 +136,7 @@ const initialProjects: ProjectPost[] = [
 ];
 
 // LocalStorage helpers
-const LOCAL_USERS_KEY = "ruy_registered_users";
 const LOCAL_POSTS_KEY = "ruy_mural_posts";
-
-function getLocalUsers(): Record<string, User> {
-  if (typeof window === "undefined") return {};
-  try {
-    const data = localStorage.getItem(LOCAL_USERS_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveLocalUser(user: User) {
-  if (typeof window === "undefined") return;
-  try {
-    const users = getLocalUsers();
-    users[user.email.toLowerCase()] = user;
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-  } catch (e) {
-    console.error("Error saving user to localStorage:", e);
-  }
-}
 
 function getLocalPosts(): ProjectPost[] {
   if (typeof window === "undefined") return initialProjects;
@@ -187,79 +158,6 @@ function saveLocalPosts(posts: ProjectPost[]) {
 }
 
 export const dbService = {
-  // --- USERS SECTION ---
-
-  async getUser(email: string): Promise<User | null> {
-    const cleanEmail = email.trim().toLowerCase();
-    
-    if (isSupabaseConfigured()) {
-      try {
-        const response = await supabaseFetch(`/users?email=eq.${encodeURIComponent(cleanEmail)}`, {
-          method: 'GET',
-        });
-        const users = await response.json();
-        if (Array.isArray(users) && users.length > 0) {
-          return users[0] as User;
-        }
-        return null;
-      } catch (error) {
-        console.error("Supabase getUser failed, falling back to localStorage:", error);
-        // Fallback to local storage if Supabase fails (e.g. network/config error)
-        return getLocalUsers()[cleanEmail] || null;
-      }
-    }
-
-    return getLocalUsers()[cleanEmail] || null;
-  },
-
-  async createUser(user: User): Promise<User> {
-    const cleanEmail = user.email.trim().toLowerCase();
-    const newUser: User = {
-      ...user,
-      email: cleanEmail,
-    };
-
-    if (isSupabaseConfigured()) {
-      try {
-        await supabaseFetch('/users', {
-          method: 'POST',
-          body: JSON.stringify(newUser),
-        });
-        return newUser;
-      } catch (error) {
-        console.error("Supabase createUser failed, falling back to localStorage:", error);
-      }
-    }
-
-    saveLocalUser(newUser);
-    return newUser;
-  },
-
-  async updateUserPassword(email: string, newPassword: string): Promise<boolean> {
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (isSupabaseConfigured()) {
-      try {
-        await supabaseFetch(`/users?email=eq.${encodeURIComponent(cleanEmail)}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ password: newPassword }),
-        });
-        return true;
-      } catch (error) {
-        console.error("Supabase updateUserPassword failed, falling back to localStorage:", error);
-      }
-    }
-
-    const localUsers = getLocalUsers();
-    const user = localUsers[cleanEmail];
-    if (user) {
-      user.password = newPassword;
-      saveLocalUser(user);
-      return true;
-    }
-    return false;
-  },
-
   // --- POSTS SECTION ---
 
   async getPosts(): Promise<ProjectPost[]> {
