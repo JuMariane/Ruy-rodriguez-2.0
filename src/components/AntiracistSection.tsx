@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import patternBg from "@/assets/pattern-bg.jpg";
 import ProjectDetailsModal, { ProjectDetails } from "./ProjectDetailsModal";
@@ -158,9 +158,135 @@ const itemsWithDetails: Record<string, ProjectDetails> = {
     originalUrl: "https://escolaruyrodriguez.wordpress.com/educacao-antirracista/"
   }
 };
+const AntiracistParticles = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = canvas.offsetWidth);
+    let height = (canvas.height = canvas.offsetHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    };
+    window.addEventListener("resize", handleResize);
+
+    const particles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      speedX: number;
+      opacity: number;
+      color: string;
+    }> = [];
+
+    const colors = [
+      "rgba(217, 119, 6, 0.35)",  // amber-600
+      "rgba(185, 28, 28, 0.25)",  // red-700
+      "rgba(245, 158, 11, 0.3)",  // amber-500
+      "rgba(220, 38, 38, 0.25)",  // red-600
+      "rgba(251, 191, 36, 0.2)",  // amber-400
+    ];
+
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 3 + 1,
+        speedY: -(Math.random() * 0.3 + 0.1),
+        speedX: Math.random() * 0.2 - 0.1,
+        opacity: Math.random() * 0.5 + 0.1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+
+    const mouse = { x: null as number | null, y: null as number | null, radius: 100 };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y += p.speedY;
+        p.x += p.speedX;
+
+        // Wrap edges
+        if (p.y < -10) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+        if (p.x < -10 || p.x > width + 10) {
+          p.speedX = -p.speedX;
+        }
+
+        // Mouse interaction (repulsion)
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            const force = (mouse.radius - distance) / mouse.radius;
+            p.x += (dx / distance) * force * 2;
+            p.y += (dy / distance) * force * 2;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.opacity;
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = p.color;
+        ctx.fill();
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" />;
+};
 
 const AntiracistSection = () => {
   const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const items = [
     "Chiquinha Gonzaga – Trilha Antirracista",
@@ -173,11 +299,14 @@ const AntiracistSection = () => {
   ];
 
   return (
-    <section id="antirracista" className="py-24 relative overflow-hidden">
+    <section id="antirracista" className="py-24 relative overflow-hidden bg-background">
       {/* Pattern background */}
-      <div className="absolute inset-0 opacity-[0.06]">
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
         <img src={patternBg} alt="" className="w-full h-full object-cover" />
       </div>
+
+      {/* Warm Floating Particles */}
+      <AntiracistParticles />
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -187,7 +316,7 @@ const AntiracistSection = () => {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <span className="text-sm font-semibold tracking-widest uppercase text-primary mb-2 block">
               Educação Antirracista
             </span>
@@ -196,13 +325,13 @@ const AntiracistSection = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -25 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="space-y-4"
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="space-y-6 bg-card/40 border border-border/30 p-6 md:p-8 rounded-2xl backdrop-blur-md"
             >
               <p className="text-muted-foreground font-body text-lg leading-relaxed">
                 Nossa escola é comprometida com a educação antirracista, promovendo projetos
@@ -211,47 +340,54 @@ const AntiracistSection = () => {
               </p>
               <p className="text-muted-foreground font-body leading-relaxed">
                 Através de trilhas pedagógicas, teatro, dança, música e pesquisa,
-                construímos um ambiente escolar que respeita e celebra a diversidade.
+                construímos um ambiente escolar que respeita, valoriza e celebra ativamente a diversidade.
               </p>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 25 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="space-y-4"
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-4 relative"
             >
               {items.map((item, i) => {
                 const projectDetails = itemsWithDetails[item];
                 const isClickable = !!projectDetails;
 
                 return (
-                  <div
+                  <motion.div
                     key={i}
+                    initial={{ opacity: 0, x: isMobile ? 0 : 30 }}
+                    whileInView={{ opacity: 1, x: isMobile ? 0 : i * 16 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.08 }}
                     onClick={() => {
                       if (isClickable) {
                         setSelectedProject(projectDetails);
                       }
                     }}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl bg-card/65 backdrop-blur-sm border transition-all duration-300 ${
+                    style={{
+                      marginLeft: isMobile ? "0px" : `${i * 16}px`,
+                    }}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl bg-card/85 backdrop-blur-md border transition-all duration-300 ${
                       isClickable
-                        ? "cursor-pointer border-border hover:border-primary/45 hover:bg-primary/5 hover:translate-x-1 hover:shadow-soft"
+                        ? "cursor-pointer border-border hover:border-primary/55 hover:bg-primary/5 hover:scale-[1.02] hover:shadow-soft"
                         : "border-border/60 opacity-80"
                     }`}
                   >
-                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${isClickable ? "bg-primary" : "bg-muted-foreground/60"}`} />
+                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${isClickable ? "bg-primary animate-pulse" : "bg-muted-foreground/60"}`} />
                     <div className="flex-1 flex justify-between items-center gap-2">
                       <span className={`text-sm font-body ${isClickable ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
                         {item}
                       </span>
                       {isClickable && (
-                        <span className="text-[10px] text-primary font-bold uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
-                          Clique para Ver
+                        <span className="text-[10px] text-primary font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-full shrink-0">
+                          Ver projeto
                         </span>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </motion.div>
