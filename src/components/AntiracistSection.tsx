@@ -450,7 +450,7 @@ const AntiracistSection = () => {
                   onMouseEnter={handleCardMouseEnter}
                   onMouseMove={handleCardMouseEnter}
                   onMouseLeave={handleCardMouseLeave}
-                  className="flex flex-col justify-between p-8 rounded-2xl bg-card/35 backdrop-blur-md border border-border/20 shadow-elevated hover:bg-card/60 hover:border-primary/20 hover:scale-[1.01] hover:-translate-y-3 transition-all duration-300 max-w-md mx-auto lg:max-w-none w-full cursor-default"
+                  className="flex flex-col justify-between p-8 rounded-2xl bg-card/35 backdrop-blur-md border border-border/20 shadow-elevated hover:bg-card/60 hover:border-primary/45 hover:scale-[1.05] hover:-translate-y-4 hover:shadow-2xl transition-all duration-500 ease-out max-w-md mx-auto lg:max-w-none w-full cursor-default"
                 >
                   <div className="flex flex-col h-full justify-between">
                     <div>
