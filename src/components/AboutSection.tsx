@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { BookOpen, Users, Microscope, Globe, Monitor, ShoppingCart, Briefcase, Info, Laptop, MapPin } from "lucide-react";
-import fachadaImg from "@/assets/fachada-escola.png";
+import VideoCard from "./VideoCard";
 
 const features = [
   {
@@ -58,20 +58,8 @@ const AboutSection = () => {
           </p>
         </motion.div>
 
-        {/* Fachada da escola */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-12 rounded-2xl overflow-hidden shadow-elevated border border-border max-w-3xl mx-auto"
-        >
-          <img
-            src={fachadaImg}
-            alt="Fachada da Escola Estadual Ruy Rodriguez"
-            className="w-full h-auto object-cover"
-          />
-        </motion.div>
+        {/* Video Card da escola */}
+        <VideoCard />
 
         {/* Horário destaque */}
         <motion.div
