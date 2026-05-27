@@ -11,6 +11,7 @@ import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import SchoolFooter from "@/components/SchoolFooter";
 import LoginModal, { UserType } from "@/components/LoginModal";
+import VideoSection from "@/components/VideoSection";
 
 const Index = () => {
   const [user, setUser] = useState<UserType | null>(null);
@@ -47,6 +48,7 @@ const Index = () => {
       />
       <HeroSection />
       <AboutSection />
+      <VideoSection />
       <SchedulesSection />
       <SchoolLifeSection />
       <MuralSection 
