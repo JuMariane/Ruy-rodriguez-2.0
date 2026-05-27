@@ -352,15 +352,7 @@ const AntiracistParticles = ({ hoveredCardRef }: AntiracistParticlesProps) => {
 
 const AntiracistSection = () => {
   const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const hoveredCardRef = useRef<HoveredCardData | null>(null);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024); // Diagonal layout at large screens (lg)
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const handleCardMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const cardEl = e.currentTarget;
@@ -388,7 +380,6 @@ const AntiracistSection = () => {
       title: "História e Visibilidade",
       concept: "Focado na ancestralidade",
       description: "Pesquisa histórica sobre o protagonismo africano e de mulheres guerreiras na luta contra a opressão colonial.",
-      align: "lg:self-start lg:mt-0",
       projects: [
         "Nzinga Mbandi – Trilha Antirracista",
         "Máscaras Africanas e arte de resistência"
@@ -398,7 +389,6 @@ const AntiracistSection = () => {
       title: "Equidade na Prática",
       concept: "Ações afirmativas escolares",
       description: "Criação de comerciais, roteiros e letramento crítico em vídeo para conscientização e combate ativo ao preconceito racial.",
-      align: "lg:self-center lg:-mt-12",
       projects: [
         "Propaganda Publicitária Antirracista"
       ]
@@ -407,7 +397,6 @@ const AntiracistSection = () => {
       title: "Cultura do Respeito",
       concept: "Desenvolvimento de empatia",
       description: "Expressões artísticas de música, dança tradicional (Maculelê), ritmo e celebração da ancestralidade afro-brasileira.",
-      align: "lg:self-end lg:mt-12",
       projects: [
         "Chiquinha Gonzaga – Trilha Antirracista",
         "Teatro: Peça Olorum Ayé com Grupo Oriki",
@@ -443,61 +432,63 @@ const AntiracistSection = () => {
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               Diversidade é força
             </h2>
-            <p className="text-muted-foreground font-body text-base max-w-2xl mx-auto mt-2">
-              Nossa escola é comprometida com a educação antirracista. Passe o mouse sobre os pilares conceituais abaixo para ver os projetos e ativar a rede de consciência.
+            <p className="text-muted-foreground/80 font-body text-sm md:text-base max-w-2xl mx-auto mt-2">
+              Nossa escola é comprometida com a educação antirracista. Explore os pilares conceituais abaixo para conhecer os projetos e ativar a rede de consciência.
             </p>
           </div>
 
-          {/* Diagonal Cascading Grid Layout */}
-          <div className="grid lg:grid-cols-3 gap-8 items-stretch lg:h-[650px]">
+          {/* Aligned Grid Layout with Minimalist Design and Hover Lift */}
+          <div className="grid lg:grid-cols-3 gap-8 items-stretch">
             {pillars.map((pillar, i) => {
               return (
                 <motion.div
                   key={pillar.title}
-                  initial={{ opacity: 0, y: 50, x: isMobile ? 0 : -20 }}
-                  whileInView={{ opacity: 1, y: 0, x: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: i * 0.15 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
                   onMouseEnter={handleCardMouseEnter}
                   onMouseMove={handleCardMouseEnter}
                   onMouseLeave={handleCardMouseLeave}
-                  className={`flex flex-col justify-between p-6 rounded-2xl bg-card/45 backdrop-blur-md border border-border/30 shadow-elevated hover:bg-card/75 hover:border-primary/40 hover:scale-[1.03] transition-all duration-500 max-w-md mx-auto lg:max-w-none w-full ${pillar.align}`}
+                  className="flex flex-col justify-between p-8 rounded-2xl bg-card/35 backdrop-blur-md border border-border/20 shadow-elevated hover:bg-card/60 hover:border-primary/20 hover:scale-[1.01] hover:-translate-y-3 transition-all duration-300 max-w-md mx-auto lg:max-w-none w-full cursor-default"
                 >
-                  <div>
-                    {/* Header card */}
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full inline-block mb-3">
-                      {pillar.concept}
-                    </span>
-                    <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">
-                      {pillar.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground font-body leading-relaxed mb-6">
-                      {pillar.description}
-                    </p>
-                  </div>
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      {/* Header card */}
+                      <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest block mb-2">
+                        {pillar.concept}
+                      </span>
+                      <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-3">
+                        {pillar.title}
+                      </h3>
+                      <p className="text-xs md:text-sm text-muted-foreground/85 font-body leading-relaxed mb-6">
+                        {pillar.description}
+                      </p>
+                    </div>
 
-                  {/* List of projects linked inside this pillar */}
-                  <div className="space-y-2.5 mt-auto pt-4 border-t border-border/10">
-                    <span className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-widest block mb-2">
-                      Projetos do Pilar
-                    </span>
-                    {pillar.projects.map((projTitle) => {
-                      const projectDetails = itemsWithDetails[projTitle];
-                      return (
-                        <div
-                          key={projTitle}
-                          onClick={() => setSelectedProject(projectDetails)}
-                          className="cursor-pointer flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-primary/5 border border-border/40 hover:border-primary/30 transition-all duration-300 group"
-                        >
-                          <span className="text-xs text-foreground/80 font-body leading-tight group-hover:text-foreground font-medium pr-2">
-                            {projTitle}
-                          </span>
-                          <span className="text-[9px] text-primary font-bold uppercase tracking-wider bg-primary/10 group-hover:bg-primary group-hover:text-primary-foreground px-2 py-0.5 rounded-full shrink-0 transition-colors">
-                            Ver
-                          </span>
-                        </div>
-                      );
-                    })}
+                    {/* List of projects linked inside this pillar */}
+                    <div className="space-y-1 pt-6 border-t border-border/15">
+                      <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase tracking-widest block mb-3">
+                        Projetos do Pilar
+                      </span>
+                      {pillar.projects.map((projTitle) => {
+                        const projectDetails = itemsWithDetails[projTitle];
+                        return (
+                          <div
+                            key={projTitle}
+                            onClick={() => setSelectedProject(projectDetails)}
+                            className="cursor-pointer flex items-center justify-between py-2.5 border-b border-border/5 hover:border-primary/20 transition-all duration-300 group"
+                          >
+                            <span className="text-xs text-muted-foreground group-hover:text-foreground font-body leading-tight transition-colors">
+                              {projTitle}
+                            </span>
+                            <span className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 shrink-0 flex items-center gap-0.5">
+                              Ver →
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </motion.div>
               );
