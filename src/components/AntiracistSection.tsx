@@ -158,7 +158,19 @@ const itemsWithDetails: Record<string, ProjectDetails> = {
     originalUrl: "https://escolaruyrodriguez.wordpress.com/educacao-antirracista/"
   }
 };
-const AntiracistParticles = () => {
+
+interface HoveredCardData {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface AntiracistParticlesProps {
+  hoveredCardRef: React.RefObject<HoveredCardData | null>;
+}
+
+const AntiracistParticles = ({ hoveredCardRef }: AntiracistParticlesProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
@@ -182,33 +194,43 @@ const AntiracistParticles = () => {
       x: number;
       y: number;
       size: number;
+      baseSize: number;
       speedY: number;
       speedX: number;
       opacity: number;
+      baseOpacity: number;
       color: string;
+      glowColor: string;
     }> = [];
 
+    // Paleta de tons terrosos, bronze, âmbar e ouro
     const colors = [
-      "rgba(217, 119, 6, 0.35)",  // amber-600
-      "rgba(185, 28, 28, 0.25)",  // red-700
-      "rgba(245, 158, 11, 0.3)",  // amber-500
-      "rgba(220, 38, 38, 0.25)",  // red-600
-      "rgba(251, 191, 36, 0.2)",  // amber-400
+      "217, 119, 6",   // âmbar-600
+      "180, 83, 9",    // bronze/laranja escuro
+      "245, 158, 11",  // âmbar-500
+      "251, 191, 36",  // ouro-400
+      "212, 163, 89",  // bronze claro metálico
     ];
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
+      const colorBase = colors[Math.floor(Math.random() * colors.length)];
+      const size = Math.random() * 3 + 1.2;
+      const opacity = Math.random() * 0.35 + 0.15;
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * 3 + 1,
-        speedY: -(Math.random() * 0.3 + 0.1),
-        speedX: Math.random() * 0.2 - 0.1,
-        opacity: Math.random() * 0.5 + 0.1,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        size: size,
+        baseSize: size,
+        speedY: -(Math.random() * 0.2 + 0.08), // subida suave
+        speedX: Math.random() * 0.14 - 0.07, // oscilação suave
+        opacity: opacity,
+        baseOpacity: opacity,
+        color: `rgba(${colorBase}, ${opacity})`,
+        glowColor: `rgb(${colorBase})`,
       });
     }
 
-    const mouse = { x: null as number | null, y: null as number | null, radius: 100 };
+    const mouse = { x: null as number | null, y: null as number | null, radius: 130 };
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -227,12 +249,16 @@ const AntiracistParticles = () => {
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
+      const hoveredCard = hoveredCardRef.current;
+      
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
+        
+        // Movimento ascendente padrão
         p.y += p.speedY;
         p.x += p.speedX;
 
-        // Wrap edges
+        // Loop das bordas
         if (p.y < -10) {
           p.y = height + 10;
           p.x = Math.random() * width;
@@ -241,26 +267,73 @@ const AntiracistParticles = () => {
           p.speedX = -p.speedX;
         }
 
-        // Mouse interaction (repulsion)
-        if (mouse.x !== null && mouse.y !== null) {
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
+        // Ponto de destino da atração
+        let targetX = mouse.x;
+        let targetY = mouse.y;
+        let activeRadius = 140;
+
+        // Se houver um card sob hover, atrai para o centro do card com maior raio
+        if (hoveredCard) {
+          targetX = hoveredCard.x;
+          targetY = hoveredCard.y;
+          activeRadius = 260; 
+        }
+
+        let isInsideCard = false;
+        
+        if (targetX !== null && targetY !== null) {
+          const dx = targetX - p.x;
+          const dy = targetY - p.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < mouse.radius) {
-            const force = (mouse.radius - distance) / mouse.radius;
-            p.x += (dx / distance) * force * 2;
-            p.y += (dy / distance) * force * 2;
+          
+          if (distance < activeRadius) {
+            const force = (activeRadius - distance) / activeRadius;
+            // Efeito magnético de atração suave
+            p.x += (dx / distance) * force * 1.6;
+            p.y += (dy / distance) * force * 1.6;
+            
+            p.opacity = p.baseOpacity + force * 0.65;
+            p.size = p.baseSize + force * 3.5;
+          } else {
+            p.opacity = p.opacity * 0.95 + p.baseOpacity * 0.05;
+            p.size = p.size * 0.95 + p.baseSize * 0.05;
+          }
+        } else {
+          p.opacity = p.opacity * 0.95 + p.baseOpacity * 0.05;
+          p.size = p.size * 0.95 + p.baseSize * 0.05;
+        }
+
+        // Verifica se a partícula está atrás da bounding box do card ativo
+        if (hoveredCard) {
+          const halfW = hoveredCard.width / 2;
+          const halfH = hoveredCard.height / 2;
+          if (
+            p.x >= hoveredCard.x - halfW &&
+            p.x <= hoveredCard.x + halfW &&
+            p.y >= hoveredCard.y - halfH &&
+            p.y <= hoveredCard.y + halfH
+          ) {
+            isInsideCard = true;
           }
         }
 
+        // Desenha partícula
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.opacity;
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = p.color;
+        
+        const rgbValues = p.glowColor.match(/\d+/g);
+        if (rgbValues) {
+          const finalOpacity = isInsideCard ? Math.min(1.0, p.opacity * 1.8) : p.opacity;
+          ctx.fillStyle = `rgba(${rgbValues[0]}, ${rgbValues[1]}, ${rgbValues[2]}, ${finalOpacity})`;
+        } else {
+          ctx.fillStyle = p.color;
+        }
+        
+        ctx.shadowBlur = isInsideCard ? 18 : (targetX !== null ? 8 : 1);
+        ctx.shadowColor = p.glowColor;
         ctx.fill();
       }
+      
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -280,33 +353,79 @@ const AntiracistParticles = () => {
 const AntiracistSection = () => {
   const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const hoveredCardRef = useRef<HoveredCardData | null>(null);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024); // Diagonal layout at large screens (lg)
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const items = [
-    "Chiquinha Gonzaga – Trilha Antirracista",
-    "Nzinga Mbandi – Trilha Antirracista",
-    "Teatro: Peça Olorum Ayé com Grupo Oriki",
-    "Maculelê e danças afro-brasileiras",
-    "Máscaras Africanas e arte de resistência",
-    "Samba do Ruy – valorização da cultura popular",
-    "Propaganda Publicitária Antirracista",
+  const handleCardMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const cardEl = e.currentTarget;
+    const rect = cardEl.getBoundingClientRect();
+    const sectionEl = cardEl.closest("section");
+    if (sectionEl) {
+      const sectionRect = sectionEl.getBoundingClientRect();
+      const relativeX = rect.left - sectionRect.left + rect.width / 2;
+      const relativeY = rect.top - sectionRect.top + rect.height / 2;
+      hoveredCardRef.current = {
+        x: relativeX,
+        y: relativeY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
+  };
+
+  const handleCardMouseLeave = () => {
+    hoveredCardRef.current = null;
+  };
+
+  const pillars = [
+    {
+      title: "História e Visibilidade",
+      concept: "Focado na ancestralidade",
+      description: "Pesquisa histórica sobre o protagonismo africano e de mulheres guerreiras na luta contra a opressão colonial.",
+      align: "lg:self-start lg:mt-0",
+      projects: [
+        "Nzinga Mbandi – Trilha Antirracista",
+        "Máscaras Africanas e arte de resistência"
+      ]
+    },
+    {
+      title: "Equidade na Prática",
+      concept: "Ações afirmativas escolares",
+      description: "Criação de comerciais, roteiros e letramento crítico em vídeo para conscientização e combate ativo ao preconceito racial.",
+      align: "lg:self-center lg:-mt-12",
+      projects: [
+        "Propaganda Publicitária Antirracista"
+      ]
+    },
+    {
+      title: "Cultura do Respeito",
+      concept: "Desenvolvimento de empatia",
+      description: "Expressões artísticas de música, dança tradicional (Maculelê), ritmo e celebração da ancestralidade afro-brasileira.",
+      align: "lg:self-end lg:mt-12",
+      projects: [
+        "Chiquinha Gonzaga – Trilha Antirracista",
+        "Teatro: Peça Olorum Ayé com Grupo Oriki",
+        "Samba do Ruy – valorização da cultura popular",
+        "Maculelê e danças afro-brasileiras"
+      ]
+    }
   ];
 
   return (
     <section id="antirracista" className="py-24 relative overflow-hidden bg-background">
       {/* Pattern background */}
-      <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
         <img src={patternBg} alt="" className="w-full h-full object-cover" />
       </div>
 
-      {/* Warm Floating Particles */}
-      <AntiracistParticles />
+      {/* Warm Magnetic Particles */}
+      <AntiracistParticles hoveredCardRef={hoveredCardRef} />
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -314,8 +433,9 @@ const AntiracistSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-6xl mx-auto"
         >
+          {/* Header */}
           <div className="text-center mb-16">
             <span className="text-sm font-semibold tracking-widest uppercase text-primary mb-2 block">
               Educação Antirracista
@@ -323,74 +443,65 @@ const AntiracistSection = () => {
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               Diversidade é força
             </h2>
+            <p className="text-muted-foreground font-body text-base max-w-2xl mx-auto mt-2">
+              Nossa escola é comprometida com a educação antirracista. Passe o mouse sobre os pilares conceituais abaixo para ver os projetos e ativar a rede de consciência.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -25 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="space-y-6 bg-card/40 border border-border/30 p-6 md:p-8 rounded-2xl backdrop-blur-md"
-            >
-              <p className="text-muted-foreground font-body text-lg leading-relaxed">
-                Nossa escola é comprometida com a educação antirracista, promovendo projetos
-                que valorizam a cultura afro-brasileira e indígena como parte fundamental
-                da formação dos nossos estudantes.
-              </p>
-              <p className="text-muted-foreground font-body leading-relaxed">
-                Através de trilhas pedagógicas, teatro, dança, música e pesquisa,
-                construímos um ambiente escolar que respeita, valoriza e celebra ativamente a diversidade.
-              </p>
-            </motion.div>
+          {/* Diagonal Cascading Grid Layout */}
+          <div className="grid lg:grid-cols-3 gap-8 items-stretch lg:h-[650px]">
+            {pillars.map((pillar, i) => {
+              return (
+                <motion.div
+                  key={pillar.title}
+                  initial={{ opacity: 0, y: 50, x: isMobile ? 0 : -20 }}
+                  whileInView={{ opacity: 1, y: 0, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: i * 0.15 }}
+                  onMouseEnter={handleCardMouseEnter}
+                  onMouseMove={handleCardMouseEnter}
+                  onMouseLeave={handleCardMouseLeave}
+                  className={`flex flex-col justify-between p-6 rounded-2xl bg-card/45 backdrop-blur-md border border-border/30 shadow-elevated hover:bg-card/75 hover:border-primary/40 hover:scale-[1.03] transition-all duration-500 max-w-md mx-auto lg:max-w-none w-full ${pillar.align}`}
+                >
+                  <div>
+                    {/* Header card */}
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full inline-block mb-3">
+                      {pillar.concept}
+                    </span>
+                    <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground font-body leading-relaxed mb-6">
+                      {pillar.description}
+                    </p>
+                  </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 25 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-4 relative"
-            >
-              {items.map((item, i) => {
-                const projectDetails = itemsWithDetails[item];
-                const isClickable = !!projectDetails;
-
-                return (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: isMobile ? 0 : 30 }}
-                    whileInView={{ opacity: 1, x: isMobile ? 0 : i * 16 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: i * 0.08 }}
-                    onClick={() => {
-                      if (isClickable) {
-                        setSelectedProject(projectDetails);
-                      }
-                    }}
-                    style={{
-                      marginLeft: isMobile ? "0px" : `${i * 16}px`,
-                    }}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl bg-card/85 backdrop-blur-md border transition-all duration-300 ${
-                      isClickable
-                        ? "cursor-pointer border-border hover:border-primary/55 hover:bg-primary/5 hover:scale-[1.02] hover:shadow-soft"
-                        : "border-border/60 opacity-80"
-                    }`}
-                  >
-                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${isClickable ? "bg-primary animate-pulse" : "bg-muted-foreground/60"}`} />
-                    <div className="flex-1 flex justify-between items-center gap-2">
-                      <span className={`text-sm font-body ${isClickable ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-                        {item}
-                      </span>
-                      {isClickable && (
-                        <span className="text-[10px] text-primary font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-full shrink-0">
-                          Ver projeto
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                  {/* List of projects linked inside this pillar */}
+                  <div className="space-y-2.5 mt-auto pt-4 border-t border-border/10">
+                    <span className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-widest block mb-2">
+                      Projetos do Pilar
+                    </span>
+                    {pillar.projects.map((projTitle) => {
+                      const projectDetails = itemsWithDetails[projTitle];
+                      return (
+                        <div
+                          key={projTitle}
+                          onClick={() => setSelectedProject(projectDetails)}
+                          className="cursor-pointer flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-primary/5 border border-border/40 hover:border-primary/30 transition-all duration-300 group"
+                        >
+                          <span className="text-xs text-foreground/80 font-body leading-tight group-hover:text-foreground font-medium pr-2">
+                            {projTitle}
+                          </span>
+                          <span className="text-[9px] text-primary font-bold uppercase tracking-wider bg-primary/10 group-hover:bg-primary group-hover:text-primary-foreground px-2 py-0.5 rounded-full shrink-0 transition-colors">
+                            Ver
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
